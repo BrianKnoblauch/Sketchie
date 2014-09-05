@@ -1,3 +1,3 @@
 Due to this project being developed with the MASM32 toolset, it needs to adhere to all the unique requirements of the MASM32 license.  http://masm32.com/license.htm  This means it's unable to be licensed under the standard licenses available.
 
-The code is specifically being written for my particular machine and configuration as an experiment.  It is unsafe to run this on any other machine/configuration.
+The code is specifically being written for my particular machine and configuration as an experiment.  It is unsafe to run this on any other machine/configuration as it is not designed for such use.  The code is publically available so that I might easily share snippets/sections with people for discussion/experimentation purposes.
