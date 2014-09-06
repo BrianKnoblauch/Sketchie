@@ -1,0 +1,5 @@
+# Executable code
+*.exe
+
+# Assembled/Linkable code
+*.obj
