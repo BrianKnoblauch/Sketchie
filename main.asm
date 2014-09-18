@@ -3,59 +3,47 @@ option casemap:none
 
 include \masm32\include\masm32rt.inc
 
-WndProc PROTO :HWND,:UINT,:WPARAM,:LPARAM
-wmPaint PROTO :HWND
-
-IDI_ICON    EQU 501
-CREF_PIXEL EQU 0 ;0 = black
+FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
 
 .data 
+    icc INITCOMMONCONTROLSEX <sizeof INITCOMMONCONTROLSEX,0>
+    wc  WNDCLASSEX <sizeof WNDCLASSEX,NULL,FSWnd,0,0,?,?,?,COLOR_SCROLLBAR+1,NULL,szClassName,?>
     about_caption   db  "About ProjectCQB...",0
     about_message   db  "In a world of conflict, few natural resources, and little energy, what's old is new again...",13,13,10,
                         "Version 1.0 Alpha",0
+    szAppName       db 'ProjectCQB',0
+    szClassName     db 'ProjectCQBClass',0
 
-icc INITCOMMONCONTROLSEX <sizeof INITCOMMONCONTROLSEX,0>
-wc  WNDCLASSEX <sizeof WNDCLASSEX,NULL,WndProc,0,0,?,?,?,COLOR_SCROLLBAR+1,NULL,szClassName,?>
-; cbSize        dd ?
-; style         dd ?
-; lpfnWndProc   dd ?
-; cbClsExtra    dd ?
-; cbWndExtra    dd ?
-; hInstance     dd ?
-; hIcon         dd ?
-; hCursor       dd ?
-; hbrBackground dd ?
-; lpszMenuName  dd ?
-; lpszClassName dd ?
-; hIconSm       dd ?
-
-szAppName       db 'ProjectCQB',0
-szClassName     db 'ProjectCQBClass',0
-
-        .DATA?
-        ALIGN   4
-
-hwndMain        HWND ?
-dwXpos          dd   ?
-dwYpos          dd   ?
-
-msg             MSG  <>
+.data?
+    hwndMain        HWND ?
+    dwXpos          dd   ?
+    dwYpos          dd   ?
+    msg             MSG  <>
 
 .code
 start:
-    ;call    about      ; TODO call on appropriate menu selection
-    call    newmain
-    invoke  ExitProcess, 0
-
+    ; TODO build menu, for "about", "main", and "exit"
+    call    about                       ; Show about screen
+    call    main                        ; Main game loop
+    invoke  ExitProcess,eax             ; Exit with code returned from game loop
+    
 about   PROC
     invoke  MessageBox, NULL, offset about_message, offset about_caption, MB_OK
     ret
 about   ENDP
 
-WndProc PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
+FSPaint PROC    hWnd:HWND
+    local   ps      :PAINTSTRUCT
+    invoke  BeginPaint,hWnd,addr ps
+    invoke  SetPixel,ps.hdc,dwXpos,dwYpos,0
+    invoke  EndPaint,hWnd,addr ps
+    ret
+FSPaint ENDP
+
+FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
     mov     eax,uMsg
     .if eax==WM_PAINT
-        invoke  wmPaint,hWnd
+        invoke  FSPaint,hWnd
         xor     eax,eax
     .elseif eax==WM_CREATE
         invoke  GetSystemMetrics,SM_CYSCREEN
@@ -91,17 +79,17 @@ WndProc PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         invoke  DefWindowProc,hWnd,uMsg,wParam,lParam
     .endif
     ret
-WndProc ENDP
+FSWnd   ENDP
 
-newmain   PROC
-        INVOKE  InitCommonControlsEx,offset icc         ;initialize common controls
+main   PROC
+        invoke  InitCommonControlsEx,offset icc         ;initialize common controls
                                                         ;register the window class
         xor     edi,edi                                 ;EDI = 0
         mov     esi,offset wc                           ;ESI = offset wc
         invoke  GetModuleHandle,edi
         mov     [esi].WNDCLASSEX.hInstance,eax
         xchg    eax,ebx                                 ;EBX = wc.hInstance
-        invoke  LoadIcon,ebx,IDI_ICON
+        invoke  LoadIcon,ebx,501
         mov     [esi].WNDCLASSEX.hIcon,eax
         mov     [esi].WNDCLASSEX.hIconSm,eax
         invoke  LoadCursor,edi,IDC_ARROW
@@ -121,15 +109,8 @@ mLoop1: invoke  GetMessage,esi,edi,edi,edi
         inc     eax                                     ;exit only
         shr     eax,1                                   ;if 0 or -1
         jnz     mLoop0                                  ;otherwise, we loop
-        invoke  ExitProcess,[esi].MSG.wParam
-newmain   ENDP
+        mov     eax,[esi].MSG.wParam
+        ret
+main   ENDP
 
-wmPaint PROC    hWnd:HWND
-    local   ps      :PAINTSTRUCT
-    invoke  BeginPaint,hWnd,addr ps
-    invoke  SetPixel,ps.hdc,dwXpos,dwYpos,0
-    invoke  EndPaint,hWnd,addr ps
-    ret
-wmPaint ENDP
-    
 end start
