@@ -61,13 +61,22 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         invoke  SetWindowPos,edx,HWND_TOPMOST,0,0,eax,ecx,0
         xor     eax,eax
     .elseif eax==WM_CHAR
-        invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL
+        .if     wParam==VK_ESCAPE
+        invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL    ; Close full screen window
+        ;TODO Following doesn't work as-is, or with PostMessage WM_PAINT, or with FSPaint call
+        .elseif wParam==VK_UP
+        dec     dwYpos
+        .elseif wParam==VK_DOWN
+        inc     dwYpos
+        .elseif wParam==VK_RIGHT
+        inc     dwXpos
+        .elseif wParam==VK_LEFT
+        dec     dwXpos
+        .endif        
         xor     eax,eax
-    .elseif eax==WM_RBUTTONUP
-        invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL
+    .elseif eax==WM_RBUTTONUP        
         xor     eax,eax
     .elseif eax==WM_LBUTTONUP
-        invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL
         xor     eax,eax
     .elseif eax==WM_CLOSE
         invoke  DestroyWindow,hWnd
