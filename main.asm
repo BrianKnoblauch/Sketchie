@@ -15,10 +15,11 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
     szClassName     db 'ProjectCQBClass',0
 
 .data?
-    hwndMain        HWND ?
-    dwXpos          dd   ?
-    dwYpos          dd   ?
-    msg             MSG  <>
+    hwndMain        HWND    ?
+    dwXpos          dd      ?
+    dwYpos          dd      ?
+    msg             MSG     <>
+    updateregion    RECT    <>          ; Left, Top, Right, Bottom
 
 .code
 start:
@@ -63,21 +64,29 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
     .elseif eax==WM_CHAR
         .if     wParam==VK_ESCAPE
         invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL    ; Close full screen window
-        ;TODO Following doesn't work as-is, or with PostMessage WM_PAINT, or with FSPaint call
         .elseif wParam==VK_UP
-        dec     dwYpos
+        dec     dwYpos        
         .elseif wParam==VK_DOWN
         inc     dwYpos
         .elseif wParam==VK_RIGHT
         inc     dwXpos
         .elseif wParam==VK_LEFT
         dec     dwXpos
-        .endif        
-        xor     eax,eax
-    .elseif eax==WM_RBUTTONUP        
-        xor     eax,eax
-    .elseif eax==WM_LBUTTONUP
-        xor     eax,eax
+        .endif   
+        ;mov     eax, dwXpos     
+        ;mov     updateregion.left, eax
+        ;mov     updateregion.right, eax
+        ;mov     eax, dwYpos
+        ;mov     updateregion.top, eax
+        ;mov     updateregion.bottom, eax
+        ;invoke  InvalidateRect,hWndMain,offset updateregion,FALSE
+        invoke  InvalidateRect,hWnd,NULL,FALSE
+        invoke  UpdateWindow,hWnd
+        xor     eax,eax        
+    ;.elseif eax==WM_RBUTTONUP        
+    ;    xor     eax,eax
+    ;.elseif eax==WM_LBUTTONUP
+    ;    xor     eax,eax
     .elseif eax==WM_CLOSE
         invoke  DestroyWindow,hWnd
         xor     eax,eax
