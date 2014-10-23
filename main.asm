@@ -15,11 +15,11 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
     szClassName     db 'ProjectCQBClass',0
 
 .data?
+    msg             MSG     <>
+    updateregion    RECT    <>          ; Left, Top, Right, Bottom    
     hwndMain        HWND    ?
     dwXpos          dd      ?
     dwYpos          dd      ?
-    msg             MSG     <>
-    updateregion    RECT    <>          ; Left, Top, Right, Bottom
 
 .code
 start:
@@ -61,7 +61,7 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         mov     hwndMain,edx
         invoke  SetWindowPos,edx,HWND_TOPMOST,0,0,eax,ecx,0
         xor     eax,eax
-    .elseif eax==WM_CHAR
+    .elseif eax==WM_KEYDOWN
         .if     wParam==VK_ESCAPE
         invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL    ; Close full screen window
         .elseif wParam==VK_UP
