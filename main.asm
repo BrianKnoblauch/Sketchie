@@ -13,6 +13,10 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
                         "Version 1.0 Alpha",0
     szAppName       db 'ProjectCQB',0
     szClassName     db 'ProjectCQBClass',0
+    upState         db  0
+    downState       db  0
+    leftState       db  0
+    rightState      db  0
 
 .data?
     msg             MSG     <>
@@ -20,10 +24,10 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
     hwndMain        HWND    ?
     dwXpos          dd      ?
     dwYpos          dd      ?
+    timer           dd      ?    
 
 .code
 start:
-    ; TODO build menu, for "about", "main", and "exit"
     call    about                       ; Show about screen
     call    main                        ; Main game loop
     invoke  ExitProcess,eax             ; Exit with code returned from game loop
@@ -44,6 +48,18 @@ FSPaint ENDP
 FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
     mov     eax,uMsg
     .if eax==WM_PAINT
+        .if     upState==1
+        dec     dwYpos
+        .endif
+        .if     downState==1
+        inc     dwYpos
+        .endif
+        .if     leftState==1
+        dec     dwXpos  
+        .endif
+        .if     rightState==1
+        inc     dwXpos
+        .endif
         invoke  FSPaint,hWnd
         xor     eax,eax
     .elseif eax==WM_CREATE
@@ -60,38 +76,52 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         mov     edx,hWnd
         mov     hwndMain,edx
         invoke  SetWindowPos,edx,HWND_TOPMOST,0,0,eax,ecx,0
+        invoke  SetTimer,hWnd,NULL,16, NULL
+        mov     timer, eax
         xor     eax,eax
     .elseif eax==WM_KEYDOWN
         .if     wParam==VK_ESCAPE
         invoke  PostMessage,hWnd,WM_SYSCOMMAND,SC_CLOSE,NULL    ; Close full screen window
         .elseif wParam==VK_UP
-        dec     dwYpos        
+        mov     upState,1
         .elseif wParam==VK_DOWN
-        inc     dwYpos
+        mov     downState,1
         .elseif wParam==VK_RIGHT
-        inc     dwXpos
+        mov    rightState,1
         .elseif wParam==VK_LEFT
-        dec     dwXpos
-        .endif   
-        ;mov     eax, dwXpos     
-        ;mov     updateregion.left, eax
-        ;mov     updateregion.right, eax
-        ;mov     eax, dwYpos
-        ;mov     updateregion.top, eax
-        ;mov     updateregion.bottom, eax
-        ;invoke  InvalidateRect,hWndMain,offset updateregion,FALSE
-        invoke  InvalidateRect,hWnd,NULL,FALSE
-        invoke  UpdateWindow,hWnd
+        mov    leftState,1
+        .endif             
         xor     eax,eax        
-    ;.elseif eax==WM_RBUTTONUP        
-    ;    xor     eax,eax
-    ;.elseif eax==WM_LBUTTONUP
-    ;    xor     eax,eax
+    .elseif eax==WM_KEYUP
+        .if     wParam==VK_UP
+        mov     upState,0
+        .elseif wParam==VK_DOWN
+        mov     downState,0
+        .elseif wParam==VK_RIGHT
+        mov     rightState,0
+        .elseif wParam==VK_LEFT
+        mov     leftState,0
+        .endif
+        xor     eax,eax
     .elseif eax==WM_CLOSE
         invoke  DestroyWindow,hWnd
         xor     eax,eax
     .elseif eax==WM_DESTROY
+        invoke  KillTimer,hWnd,NULL
         invoke  PostQuitMessage,NULL
+        xor     eax,eax
+    .elseif eax==WM_TIMER
+        mov     eax, dwXpos
+        dec     eax     
+        mov     updateregion.left, eax
+        add     eax,3
+        mov     updateregion.right, eax
+        mov     eax, dwYpos
+        dec     eax
+        mov     updateregion.top, eax
+        add     eax,3
+        mov     updateregion.bottom, eax
+        invoke  InvalidateRect,hWnd,offset updateregion,FALSE
         xor     eax,eax
     .else
         invoke  DefWindowProc,hWnd,uMsg,wParam,lParam
