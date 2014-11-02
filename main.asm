@@ -31,6 +31,9 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
 .code
 start:
     call    about                       ; Show about screen
+    ; TODO add main menu (in another file) and invoke her
+    ; TODO move current "main stuff" into another file to support multiple "mains"
+    ; TODO call the "main" that we've actually selected instead of the one below
     call    main                        ; Main game loop
     invoke  ExitProcess,eax             ; Exit with code returned from game loop
     
