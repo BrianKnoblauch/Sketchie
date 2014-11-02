@@ -8,6 +8,7 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
 .data 
     icc INITCOMMONCONTROLSEX <sizeof INITCOMMONCONTROLSEX,0>
     wc  WNDCLASSEX <sizeof WNDCLASSEX,NULL,FSWnd,0,0,?,?,?,COLOR_SCROLLBAR+1,NULL,szClassName,?>
+    timerRate       dd  16    
     about_caption   db  "About ProjectCQB...",0
     about_message   db  "In a world of conflict, few natural resources, and little energy, what's old is new again...",13,13,10,
                         "Version 1.0 Alpha",0
@@ -17,6 +18,7 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
     downState       db  0
     leftState       db  0
     rightState      db  0
+
 
 .data?
     msg             MSG     <>
@@ -76,7 +78,7 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         mov     edx,hWnd
         mov     hwndMain,edx
         invoke  SetWindowPos,edx,HWND_TOPMOST,0,0,eax,ecx,0
-        invoke  SetTimer,hWnd,NULL,16, NULL
+        invoke  SetTimer,hWnd,NULL,timerRate, NULL
         mov     timer, eax
         xor     eax,eax
     .elseif eax==WM_KEYDOWN
@@ -90,6 +92,18 @@ FSWnd   PROC    hWnd:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
         mov    rightState,1
         .elseif wParam==VK_LEFT
         mov    leftState,1
+        .elseif wParam==VK_OEM_PLUS
+        .if     timerRate>1
+        shr     timerRate,1
+        .endif
+        invoke  KillTimer,hWnd,NULL
+        invoke  SetTimer,hWnd,NULL,timerRate, NULL
+        .elseif wParam==VK_OEM_MINUS
+        .if     timerRate<1024
+        shl     timerRate,1
+        .endif
+        invoke  KillTimer,hWnd,NULL
+        invoke  SetTimer,hWnd,NULL,timerRate, NULL        
         .endif             
         xor     eax,eax        
     .elseif eax==WM_KEYUP
