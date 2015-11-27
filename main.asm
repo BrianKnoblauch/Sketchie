@@ -9,11 +9,11 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
     icc INITCOMMONCONTROLSEX <sizeof INITCOMMONCONTROLSEX,0>
     wc  WNDCLASSEX <sizeof WNDCLASSEX,NULL,FSWnd,0,0,?,?,?,COLOR_SCROLLBAR+1,NULL,szClassName,?>
     timerRate       dd  16    
-    about_caption   db  "About ProjectCQB...",0
-    about_message   db  "In a world of conflict, few natural resources, and little energy, what's old is new again...",13,13,10,
+    about_caption   db  "About Sketchie",0
+    about_message   db  "Arrows draw (w/ multi support), +/- changes repeat rate, esc to exit.",13,13,10,
                         "Version 1.0 Alpha",0
-    szAppName       db 'ProjectCQB',0
-    szClassName     db 'ProjectCQBClass',0
+    szAppName       db 'Sketchie',0
+    szClassName     db 'SketchieClass',0
     upState         db  0
     downState       db  0
     leftState       db  0
@@ -31,9 +31,6 @@ FSWnd   PROTO :HWND,:UINT,:WPARAM,:LPARAM
 .code
 start:
     call    about                       ; Show about screen
-    ; TODO add main menu (in another file) and invoke
-    ; TODO move current "main stuff" into another file to support multiple "mains"
-    ; TODO call the "main" that we've actually selected instead of the one below
     call    main                        ; Main game loop
     invoke  ExitProcess,eax             ; Exit with code returned from game loop
     
